@@ -285,17 +285,18 @@ namespace MyNotepad
         // ============================= BEGIN OF VIEW MENU ============================================================
         private void zoomInView_Click(object sender, EventArgs e)
         {
+            notepadBox.ZoomFactor += 0.1f;
 
         }
 
         private void zoomOutView_Click(object sender, EventArgs e)
         {
-
+            notepadBox.ZoomFactor -= 0.1f;
         }
 
         private void restorView_Click(object sender, EventArgs e)
         {
-
+            notepadBox.ZoomFactor = 1.0f;
         }
 
 
