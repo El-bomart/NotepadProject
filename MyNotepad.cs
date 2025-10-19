@@ -3,10 +3,13 @@ namespace MyNotepad
 {
     public partial class MyNotepad : Form
     {
-        private const string DEFAULT_NAME = "Untitled*";
-        private string currentFilePath = "";
-
         private const string FORM_TITTLE = "My Notepad"; // Holds the title of the window
+
+        private const string DEFAULT_NAME = $"{FORM_TITTLE} | Untitled*";
+        private string currentFilePath = "";
+        private bool isNoteModified = false; // Set to true when the note is modified, false otherwise.
+
+
 
 
         private void SaveFileAs()
@@ -39,7 +42,7 @@ namespace MyNotepad
                             File.WriteAllText(currentFilePath, notepadBox.Text);
                         }
 
-                        this.Text = $"{FORM_TITTLE} - {Path.GetFileNameWithoutExtension(currentFilePath)}";
+                        this.Text = $"{FORM_TITTLE} | {Path.GetFileNameWithoutExtension(currentFilePath)}";
                     }
 
                     catch (Exception ex)
@@ -137,9 +140,9 @@ namespace MyNotepad
 
         private void CreateNewNote()
         {
-            
 
-            if (!string.IsNullOrEmpty(currentFilePath) || this.Text == DEFAULT_NAME)
+
+            if ( (!string.IsNullOrEmpty(currentFilePath) && this.Text.Contains("*") ) || (this.Text == DEFAULT_NAME && !string.IsNullOrEmpty(notepadBox.Text) ) )
             {
                 CloseFile();                        // Close note before creating a new one if there is an unsaved note or a file open
             }
@@ -181,7 +184,7 @@ namespace MyNotepad
         private void openFile_Click(object sender, EventArgs e)
         {
             // Open a file
-            if(!string.IsNullOrEmpty(currentFilePath))
+            if( (!string.IsNullOrEmpty(currentFilePath) && this.Text.Contains("*") ) || ( (this.Text == DEFAULT_NAME && !string.IsNullOrEmpty(notepadBox.Text) ) ) || isNoteModified)
             {
                 var confirm = MessageBox.Show("You must close the current file before you can open another one.\nProceed?", "Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (confirm == DialogResult.Yes)
@@ -227,7 +230,7 @@ namespace MyNotepad
 
             if(this.Text.Contains("*"))
             {
-                var result = MessageBox.Show($"You have an unsaved file opened. If you close, all the changes will be lost.\nWould you llike to save it before closing?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                var result = MessageBox.Show($"You have an unsaved note opened. If you close, all the changes will be lost.\nWould you llike to save it before closing?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {
                     saveFile_Click(sender, e);
