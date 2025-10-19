@@ -3,7 +3,7 @@ namespace MyNotepad
 {
     public partial class MyNotepad : Form
     {
-
+        private const string DEFAULT_NAME = "Untitled*";
         private string currentFilePath = "";
 
         private const string FORM_TITTLE = "My Notepad"; // Holds the title of the window
@@ -52,7 +52,7 @@ namespace MyNotepad
 
         private void SaveFile()
         {
-            if (string.IsNullOrEmpty(currentFilePath))
+            if (string.IsNullOrEmpty(currentFilePath) || this.Text == DEFAULT_NAME)
             {
                 SaveFileAs();
             }
@@ -83,18 +83,20 @@ namespace MyNotepad
         private void CloseFile()
         {
             //
-            if(this.Text.Contains("*"))
+            if(this.Text.Contains("*") || this.Text == DEFAULT_NAME)
             {
                 var result = MessageBox.Show("There is an unsaved file currently opened. Would like to save it first?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if(result == DialogResult.Yes)
                 {
                     // Save file function call here
+                    SaveFile();
 
                 }
             }
 
             notepadBox.Clear();
             this.Text = FORM_TITTLE; // Set app title back to initial value
+            currentFilePath = ""; // Clear current file path
         }
 
         // Used to open files
@@ -133,6 +135,21 @@ namespace MyNotepad
         }
 
 
+        private void CreateNewNote()
+        {
+            
+
+            if (!string.IsNullOrEmpty(currentFilePath) || this.Text == DEFAULT_NAME)
+            {
+                CloseFile();                        // Close note before creating a new one if there is an unsaved note or a file open
+            }
+
+            notepadBox.Clear();
+            this.Text = DEFAULT_NAME;               // Set app title to 'Untitled'
+            notepadBox.Focus();                     // Put cursor focus on the note box so the user can start typing.
+            currentFilePath = "";                   // Clear current file path
+        }
+
 
 
 
@@ -154,11 +171,10 @@ namespace MyNotepad
 
         // ============================= OPERATIONS IN THE FILE MENU ================================================
 
-
         // 1. Create a new txt file
         private void newFile_Click(object sender, EventArgs e)
         {
-
+            CreateNewNote();
         }
 
         // 2. Open an existing txt file
@@ -226,10 +242,8 @@ namespace MyNotepad
                 }
             }
 
-            else
-            {
-                this.Close();
-            }
+            
+            this.Close();
         }
 
         private void closeMenu_Click(object sender, EventArgs e)
