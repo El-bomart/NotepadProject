@@ -3,11 +3,28 @@ namespace MyNotepad
 {
     public partial class MyNotepad : Form
     {
-        private const string FORM_TITTLE = "My Notepad"; // Holds the title of the window
+        private const string FORM_TITTLE = "My Notepad";                                                // Holds the title of the window
 
         private const string DEFAULT_NAME = $"{FORM_TITTLE} | Untitled*";
         private string currentFilePath = "";
-        private bool isNoteModified = false; // Set to true when the note is modified, false otherwise.
+        private string defaultExtension = ".txt";                                                       // Default extension for new files
+
+        private bool isNoteLoaded = false;                                                              // True if the file has just been loaded, false otherwise
+        private bool isNoteModified = false;                                                            // True if the note has been modified, false otherwise
+        private bool cancelCreateNewNote = false;                                                       // I use this to avoid clearing notepadBox if the user chooses cancel when prompted to save unsaved changes
+
+
+
+
+        public MyNotepad()
+        {
+            InitializeComponent();
+        }
+
+        private void MyNotepad_Load(object sender, EventArgs e)
+        {
+
+        }
 
 
 
@@ -16,24 +33,25 @@ namespace MyNotepad
         {
             using (var saveFileDlg = new SaveFileDialog())
             {
-                saveFileDlg.Title = "Save Note"; // Title to show on OpenFileDialog window
-                saveFileDlg.Filter = "Text files (*.txt)|*.txt|Rich text files (*.rtf)|*.rtf"; 
-                saveFileDlg.DefaultExt = "txt";
+                saveFileDlg.Title = "Save Note";                                                            // Title to show on OpenFileDialog window
+                saveFileDlg.Filter = "Text files (*.txt)|*.txt|Rich text files (*.rtf)|*.rtf";
+
+                saveFileDlg.DefaultExt = defaultExtension;
                 saveFileDlg.AddExtension = true;
 
 
-                var dialogResult = saveFileDlg.ShowDialog(); // It's either OK or CANCEL
+                var dialogResult = saveFileDlg.ShowDialog();                                                // It's either OK or CANCEL
 
 
                 if (dialogResult == DialogResult.OK)
                 {
-                    currentFilePath = saveFileDlg.FileName; // Updates the current file path
+                    currentFilePath = saveFileDlg.FileName;                                                 // Updates the current file path
 
                     // 
 
                     try
                     {
-                        if(Path.GetExtension(currentFilePath).ToLower() == "rft" || Path.GetExtension(currentFilePath).ToLower() == ".rft")
+                        if (Path.GetExtension(currentFilePath).ToLower() == "rft" || Path.GetExtension(currentFilePath).ToLower() == ".rft")
                         {
                             notepadBox.SaveFile(currentFilePath);
                         }
@@ -72,6 +90,7 @@ namespace MyNotepad
                     {
                         File.WriteAllText(currentFilePath, notepadBox.Text);
                     }
+
                 }
 
                 catch (Exception ex)
@@ -86,20 +105,25 @@ namespace MyNotepad
         private void CloseFile()
         {
             //
-            if(this.Text.Contains("*") || this.Text == DEFAULT_NAME)
+            if (this.Text.Contains("*") || this.Text == DEFAULT_NAME)
             {
-                var result = MessageBox.Show("There is an unsaved file currently opened. Would like to save it first?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                if(result == DialogResult.Yes)
+                var result = MessageBox.Show("There is an unsaved file currently opened. Would like to save it first?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
                 {
                     // Save file function call here
                     SaveFile();
 
                 }
+                else if (result == DialogResult.Cancel)
+                {
+                    cancelCreateNewNote = true;
+                    return;                                                                                     // Do nothing and return to the note
+                }
             }
 
             notepadBox.Clear();
-            this.Text = FORM_TITTLE; // Set app title back to initial value
-            currentFilePath = ""; // Clear current file path
+            this.Text = FORM_TITTLE;                                                                            // Set app title back to initial value
+            currentFilePath = "";                                                                               // Clear current file path
         }
 
         // Used to open files
@@ -107,26 +131,28 @@ namespace MyNotepad
         {
             using (var fileDlg = new OpenFileDialog())
             {
-                fileDlg.Title = "Select a text file to open"; // Title to show on OpenFileDialog window
+                fileDlg.Title = "Select a text file to open";                                                   // Title to show on OpenFileDialog window
                 fileDlg.Filter = "Text files (*.txt)|*.txt|Rich text files (*.rtf)|*.rtf";
-                fileDlg.Multiselect = false; // Only one file can be selected
+                fileDlg.Multiselect = false;                                                                    // Only one file can be selected
 
 
-                var dialogResult = fileDlg.ShowDialog(); // Get the result of the file dialog. It's either OK or CANCEL
+                var dialogResult = fileDlg.ShowDialog();                                                        // Get the result of the file dialog. It's either OK or CANCEL
 
 
                 if (dialogResult == DialogResult.OK)
                 {
-                    currentFilePath = fileDlg.FileName; // Updates the current file path
+                    currentFilePath = fileDlg.FileName;                                                         // Updates the current file path
 
                     // Open and loading file to noteBox
 
                     try
                     {
                         notepadBox.LoadFile(currentFilePath, RichTextBoxStreamType.PlainText);
-                        
 
-                        this.Text = $"{FORM_TITTLE} - {Path.GetFileNameWithoutExtension(currentFilePath)}"; // Showing which file is currently open in 'My Notepad'
+
+                        this.Text = $"{FORM_TITTLE} - {Path.GetFileNameWithoutExtension(currentFilePath)}";     // Showing which file is currently open in 'My Notepad'
+
+                        isNoteLoaded = true;                                                                    // Mark that the note has been loaded
                     }
 
                     catch (Exception ex)
@@ -138,41 +164,52 @@ namespace MyNotepad
         }
 
 
-        private void CreateNewNote()
+        private void CreateNewNote(bool passCloseTest = false)
         {
 
 
-            if ( (!string.IsNullOrEmpty(currentFilePath) && this.Text.Contains("*") ) || (this.Text == DEFAULT_NAME && !string.IsNullOrEmpty(notepadBox.Text) ) )
+           if(!passCloseTest)
             {
-                CloseFile();                        // Close note before creating a new one if there is an unsaved note or a file open
+                if ((!string.IsNullOrEmpty(currentFilePath) && this.Text.Contains("*")) || (this.Text == DEFAULT_NAME && !string.IsNullOrEmpty(notepadBox.Text)))
+                {
+                    CloseFile();                                                               // Close note before creating a new one if there is an unsaved note or a file open
+                }
+                if (cancelCreateNewNote)
+                {
+                    cancelCreateNewNote = false;                                             // Reset the flag
+                    return;                                                                 // Do nothing and return to the note
+                }
+                notepadBox.Clear();
             }
-
-            notepadBox.Clear();
-            this.Text = DEFAULT_NAME;               // Set app title to 'Untitled'
-            notepadBox.Focus();                     // Put cursor focus on the note box so the user can start typing.
-            currentFilePath = "";                   // Clear current file path
+            
+            this.Text = DEFAULT_NAME;                                                       // Set app title to 'Untitled'
+            notepadBox.Focus();                                                             // Put cursor focus on the note box so the user can start typing.
+            currentFilePath = "";                                                           // Clear current file path
         }
 
 
-
-
-
-        public MyNotepad()
+        private void ChangeFont()
         {
-            InitializeComponent();
+            using (var fontDlg = new FontDialog())
+            {
+                if (fontDlg.ShowDialog() == DialogResult.OK)
+                {
+                    notepadBox.Font = fontDlg.Font;
+                    defaultExtension = ".rtf";                                              // Change default extension to .rtf when font is changed
+                }
+
+            }
         }
 
-        private void MyNotepad_Load(object sender, EventArgs e)
-        {
 
-        }
+
 
         private void menuBar_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-
+            // No operations is needed here
         }
 
-        // ============================= OPERATIONS IN THE FILE MENU ================================================
+        // ============================= BEGGIN OPERATIONS IN FILE MENU ====================================================================================================================
 
         // 1. Create a new txt file
         private void newFile_Click(object sender, EventArgs e)
@@ -184,7 +221,7 @@ namespace MyNotepad
         private void openFile_Click(object sender, EventArgs e)
         {
             // Open a file
-            if( (!string.IsNullOrEmpty(currentFilePath) && this.Text.Contains("*") ) || ( (this.Text == DEFAULT_NAME && !string.IsNullOrEmpty(notepadBox.Text) ) ) || isNoteModified)
+            if ((!string.IsNullOrEmpty(currentFilePath) && this.Text.Contains("*")) || (!string.IsNullOrEmpty(notepadBox.Text) && isNoteModified))
             {
                 var confirm = MessageBox.Show("You must close the current file before you can open another one.\nProceed?", "Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (confirm == DialogResult.Yes)
@@ -215,7 +252,7 @@ namespace MyNotepad
         {
             // Save a file at new path
 
-            if(string.IsNullOrEmpty(notepadBox.Text))
+            if (string.IsNullOrEmpty(notepadBox.Text))
             {
                 MessageBox.Show("Cannot save an empty note!");
                 return;
@@ -228,16 +265,16 @@ namespace MyNotepad
         {
             // Exit app
 
-            if(this.Text.Contains("*"))
+            if (this.Text.Contains("*"))
             {
-                var result = MessageBox.Show($"You have an unsaved note opened. If you close, all the changes will be lost.\nWould you llike to save it before closing?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                var result = MessageBox.Show($"You have an unsaved note opened. If you close, all the changes will be lost.\nWould you like to save it before closing?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {
                     saveFile_Click(sender, e);
                 }
-                else if(result == DialogResult.No)
+                else if (result == DialogResult.No)
                 {
-                    this.Close(); // Close the app
+                    this.Close();                           // Close the app
                 }
                 else
                 {
@@ -245,44 +282,53 @@ namespace MyNotepad
                 }
             }
 
-            
+
             this.Close();
         }
 
         private void closeMenu_Click(object sender, EventArgs e)
         {
-            // Close a file
+            // Close a note
 
             CloseFile();
         }
 
-        // ============================= END OF FEATURES IN FILE MENU =================================================
+        // ============================= END OF FEATURES IN FILE MENU =====================================================
 
 
 
 
-        // ============================= BEGIIN EDIT MENU =============================================================
+        // ============================= BEGIIN EDIT MENU =================================================================
         private void editMenu_Click(object sender, EventArgs e)
         {
-
+            // No operations is needed here
         }
 
         private void timeDateEdit_Click(object sender, EventArgs e)
         {
-
+            if (string.IsNullOrEmpty(currentFilePath) && string.IsNullOrEmpty(notepadBox.Text))
+            {
+                CreateNewNote();                                            // You can't just add stuff outside of a note!
+            }
+            notepadBox.SelectedText = DateTime.Now.ToString("f");
         }
 
         private void fontEdit_Click(object sender, EventArgs e)
         {
-
+            if (string.IsNullOrEmpty(currentFilePath) && string.IsNullOrEmpty(notepadBox.Text))
+            {
+                CreateNewNote();                                            // You can't change fonts when there's no notes!
+            }
+            ChangeFont();
         }
 
-        // ============================= END OF EDIT MENU =============================================================
+        // ============================= END OF EDIT MENU ===================================================================
 
 
 
 
-        // ============================= BEGIN OF VIEW MENU ============================================================
+        // ============================= BEGIN OF VIEW MENU =================================================================
+
         private void zoomInView_Click(object sender, EventArgs e)
         {
             notepadBox.ZoomFactor += 0.1f;
@@ -299,44 +345,36 @@ namespace MyNotepad
             notepadBox.ZoomFactor = 1.0f;
         }
 
+        // ============================= END OF VIEW MENU =================================================================
 
 
-        // ============================= END OF VIEW MENU ==============================================================
+
+
+
+
+
+
 
         // Rich text box: text is displayed and edited here
         private void notepadBox_TextChanged(object sender, EventArgs e)
         {
 
+            if (isNoteLoaded && !this.Text.Contains("*"))
+            {
+                this.Text = $"{this.Text}*";                                 // Add asterisk to title to indicate unsaved changes
+                isNoteLoaded = false;
+                isNoteModified = true;
+            }
+            else if (string.IsNullOrEmpty(currentFilePath) && !string.IsNullOrEmpty(notepadBox.Text))
+            {
+                CreateNewNote(true);                             // Add asterisk to title to indicate unsaved changes
+                isNoteModified = true;
+                return;
+            }
+
         }
-
-
-
-      
-
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -368,4 +406,5 @@ namespace MyNotepad
  *                                  
  * RichTextBox: notepadBox
  * 
+ * *************************************************************************************************************
  */
