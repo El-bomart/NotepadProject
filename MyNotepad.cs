@@ -105,22 +105,25 @@ namespace MyNotepad
         private void CloseFile()
         {
             //
-            if (this.Text.Contains("*") || this.Text == DEFAULT_NAME)
+            string fileContent = notepadBox.Text;                                                               // Store current content of the note so that Trim() cannot modified the content of notepadBox
+            if (!string.IsNullOrEmpty(fileContent.Trim()) || string.IsNullOrEmpty(currentFilePath))             // Only prompt to save if there is something written in the note, excluding whitespace
             {
-                var result = MessageBox.Show("There is an unsaved file currently opened. Would like to save it first?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-                if (result == DialogResult.Yes)
+                if (this.Text.Contains("*") || this.Text == DEFAULT_NAME)
                 {
-                    // Save file function call here
-                    SaveFile();
+                    var result = MessageBox.Show("Would like to save the changes of the current note first?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                    if (result == DialogResult.Yes)
+                    {
+                        // Save file function call here
+                        SaveFile();
 
-                }
-                else if (result == DialogResult.Cancel)
-                {
-                    cancelCreateNewNote = true;
-                    return;                                                                                     // Do nothing and return to the note
+                    }
+                    else if (result == DialogResult.Cancel)
+                    {
+                        cancelCreateNewNote = true;
+                        return;                                                                                  // Do nothing and return to the note
+                    }
                 }
             }
-
             notepadBox.Clear();
             this.Text = FORM_TITTLE;                                                                            // Set app title back to initial value
             currentFilePath = "";                                                                               // Clear current file path
@@ -221,7 +224,9 @@ namespace MyNotepad
         private void openFile_Click(object sender, EventArgs e)
         {
             // Open a file
-            if ((!string.IsNullOrEmpty(currentFilePath) && this.Text.Contains("*")) || (!string.IsNullOrEmpty(notepadBox.Text) && isNoteModified))
+            string fileContent = notepadBox.Text;                                       // Store current content of the note so that Trim() cannot modified the content of notepadBox
+
+            if ((!string.IsNullOrEmpty(currentFilePath) && this.Text.Contains("*")) || (!string.IsNullOrEmpty(fileContent.Trim()) && isNoteModified))
             {
                 var confirm = MessageBox.Show("You must close the current file before you can open another one.\nProceed?", "Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (confirm == DialogResult.Yes)
@@ -265,7 +270,9 @@ namespace MyNotepad
         {
             // Exit app
 
-            if (this.Text.Contains("*"))
+            string filecontent = notepadBox.Text;                                       // Store current content of the note so that Trim() cannot modified the content of notepadBox
+
+            if (this.Text.Contains("*") && !string.IsNullOrEmpty(currentFilePath) || (!string.IsNullOrEmpty(filecontent.Trim() ) ) )
             {
                 var result = MessageBox.Show($"You have an unsaved note opened. If you close, all the changes will be lost.\nWould you like to save it before closing?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
