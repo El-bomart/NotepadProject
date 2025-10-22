@@ -338,13 +338,22 @@ namespace MyNotepad
 
         private void zoomInView_Click(object sender, EventArgs e)
         {
-            notepadBox.ZoomFactor += 0.1f;
-
+            const float MAX_ZOOM = 10.0f;
+            if(notepadBox.ZoomFactor < MAX_ZOOM) 
+            {
+                notepadBox.ZoomFactor += 0.1f;
+            }
+            MessageBox.Show($"Cannot zoom in any further!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void zoomOutView_Click(object sender, EventArgs e)
         {
-            notepadBox.ZoomFactor -= 0.1f;
+            const float MIN_ZOOM = 0.1f;
+            if (notepadBox.ZoomFactor < MIN_ZOOM)
+            {
+                notepadBox.ZoomFactor -= 0.1f;
+            }
+            MessageBox.Show($"Cannot zoom out any further!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void restorView_Click(object sender, EventArgs e)
