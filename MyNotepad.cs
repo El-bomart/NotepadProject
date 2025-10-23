@@ -3,7 +3,7 @@ namespace MyNotepad
 {
     public partial class MyNotepad : Form
     {
-        private const string FORM_TITTLE = "My Notepad";                                                // Holds the title of the window
+        private const string FORM_TITTLE = "Simple Notepad";                                                // Holds the title of the window
 
         private const string DEFAULT_NAME = $"{FORM_TITTLE} | Untitled*";
         private string currentFilePath = "";

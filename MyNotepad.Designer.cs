@@ -35,8 +35,8 @@
             openFile = new ToolStripMenuItem();
             saveFile = new ToolStripMenuItem();
             saveAsFile = new ToolStripMenuItem();
-            exitFile = new ToolStripMenuItem();
             closeMenu = new ToolStripMenuItem();
+            exitFile = new ToolStripMenuItem();
             editMenu = new ToolStripMenuItem();
             timeDateEdit = new ToolStripMenuItem();
             fontEdit = new ToolStripMenuItem();
@@ -98,14 +98,6 @@
             saveAsFile.Text = "Save As";
             saveAsFile.Click += saveAsFile_Click;
             // 
-            // exitFile
-            // 
-            exitFile.Name = "exitFile";
-            exitFile.ShortcutKeys = Keys.Alt | Keys.F4;
-            exitFile.Size = new Size(180, 22);
-            exitFile.Text = "Exit";
-            exitFile.Click += exitFile_Click;
-            // 
             // closeMenu
             // 
             closeMenu.Name = "closeMenu";
@@ -113,6 +105,14 @@
             closeMenu.Size = new Size(180, 22);
             closeMenu.Text = "Close";
             closeMenu.Click += closeMenu_Click;
+            // 
+            // exitFile
+            // 
+            exitFile.Name = "exitFile";
+            exitFile.ShortcutKeys = Keys.Alt | Keys.F4;
+            exitFile.Size = new Size(180, 22);
+            exitFile.Text = "Exit";
+            exitFile.Click += exitFile_Click;
             // 
             // editMenu
             // 
@@ -148,7 +148,7 @@
             // 
             zoomInView.Name = "zoomInView";
             zoomInView.ShortcutKeys = Keys.Control | Keys.W;
-            zoomInView.Size = new Size(180, 22);
+            zoomInView.Size = new Size(172, 22);
             zoomInView.Text = "Zoom In";
             zoomInView.Click += zoomInView_Click;
             // 
@@ -156,7 +156,7 @@
             // 
             zoomOutView.Name = "zoomOutView";
             zoomOutView.ShortcutKeys = Keys.Control | Keys.Q;
-            zoomOutView.Size = new Size(180, 22);
+            zoomOutView.Size = new Size(172, 22);
             zoomOutView.Text = "Zoom Out";
             zoomOutView.Click += zoomOutView_Click;
             // 
@@ -164,7 +164,7 @@
             // 
             restorView.Name = "restorView";
             restorView.ShortcutKeys = Keys.Control | Keys.R;
-            restorView.Size = new Size(180, 22);
+            restorView.Size = new Size(172, 22);
             restorView.Text = "Restor";
             restorView.Click += restorView_Click;
             // 
@@ -192,7 +192,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuBar;
             Name = "MyNotepad";
-            Text = "My Notepad";
+            Text = "Simple Notepad";
             Load += MyNotepad_Load;
             menuBar.ResumeLayout(false);
             menuBar.PerformLayout();
